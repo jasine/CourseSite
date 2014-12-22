@@ -13,6 +13,7 @@ namespace CourseSite.Models
         //学期开始时间，修改这里变换学期以自动返回周数
         public readonly DateTime TermStartTime = DateTime.Parse("2014-9-1");
 
+        public int Id { get; set; }
 
         [DataMember(Name = "CourseInfos")]
         public List<CourseModel> CourseInfoList { get; set; }

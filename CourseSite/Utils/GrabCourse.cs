@@ -25,8 +25,10 @@ namespace CourseSite.Utils
             {
                 if (loginInfoLines[i].Contains("当前用户所在单位"))
                 {
-                    courseListModel.Organization = loginInfoLines[i + 3].Trim();
+                    String str = loginInfoLines[i + 3].Trim();
+                    courseListModel.Organization =str.Substring(2,str.Length-2) ;
                     courseListModel.Name = loginInfoLines[i + 6].Trim();
+                    break;
                 }
             }
 
@@ -90,7 +92,7 @@ namespace CourseSite.Utils
                             }
                             else
                             {
-                                courseModel.Id = ++index;
+                                courseModel.Index = ++index;
                                 //String[] weekTemp = content.Split('、');
                                 //List<Int32> weekList = new List<Int32>();
                                 //for (int m = 0; m < weekTemp.Length; m++)

@@ -12,6 +12,6 @@ namespace CourseSite.Models
 
         public string Password { get; set; }
 
-        public List<CourseModel> Courses { get; set; }
+        public CourseListModel CoursesList { get; set; }
     }
 }

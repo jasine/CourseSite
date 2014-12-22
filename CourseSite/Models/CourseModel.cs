@@ -7,7 +7,9 @@ namespace CourseSite.Models
     [DataContract(Name = "CourseInfo")]
     public class CourseModel
     {
-        [DataMember]
+        [DataMember(Name ="Id")]
+        public int Index { get; set; }
+
         public int Id { get; set; }
 
         [DataMember]

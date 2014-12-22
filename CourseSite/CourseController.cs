@@ -25,13 +25,38 @@ namespace CourseSite
             /*return new CourseListModel {CourseInfoList=new List<CourseModel> { new CourseModel{ Id = 1, Num = "1000", Name = "Data Mining",Place="教1-101",Teacher="刘莹",Time="1-2",Week=1,WeekNum=new List<int> {2,3,4,5,6 } } ,
                 new CourseModel{  Id = 1, Num = "1001", Name = "政治",Place="教1-002",Time="1-2",Week=3,WeekNum=new List<int> {2,3,4,5,6,7,8 } }}
             };*/
-            
-            using (var contex = new CourseDb())
+            CourseListModel courseList;
+            //using (var contex = new CourseDb())
+            //{
+            //    //contex.Users.c
+            //    Console.WriteLine(contex.Users.Count());
+            //    //if(contex.Users.Contains)
+            //}
+            try
             {
-                //contex.Users.c
-                Console.WriteLine(contex.Users.Count());
+                courseList = GrabCourse.GetCourseList(username, password);
+                using(var contex=new CourseDb())
+                {
+                    var users = from user in contex.Users where user.Name==username&&user.Password==password select new { Name = username, Password = password };
+                    
+                    if ( users.Count()==0)
+                    {
+                        UserModel user = new UserModel() { Name = username, Password = password, CoursesList = courseList };
+                        contex.Users.Add(user);
+                        contex.SaveChanges();
+                        
+                    }
+                }
+                
+                
             }
-            return GrabCourse.GetCourseList(username, password);
+            catch (Exception)
+            {
+                
+                return null;
+                //throw;
+            }
+            return courseList;
         }
 
         public string Get(string s)
