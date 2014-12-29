@@ -8,10 +8,17 @@ namespace CourseSite.Models
     public class UserModel
     {
         public int Id { get; set; }
-        public string Name { get; set; }
+        public string Username { get; set; }
 
         public string Password { get; set; }
 
-        public CourseListModel CoursesList { get; set; }
+        public string CardNum { get; set; }
+
+        public string Name { get; set; }
+
+        public string Organization { get; set; }
+
+
+        public List<CourseDbModel> CoursesList { get; set; }
     }
 }

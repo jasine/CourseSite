@@ -11,26 +11,43 @@ namespace CourseSite.Utils
 {
     public class GrabCourse
     {
-        public static CourseListModel GetCourseList(String userName, String passWord)
+        public static UserModel GetUserInfo(string username,string password)
         {
-            CourseListModel courseListModel = new CourseListModel();
-            CookieContainer cookieStore = new CookieContainer();
-            List<CourseModel> courseList = new List<CourseModel>();
-            int index = 0;
-
-            string postStr = "userName=" + userName + "&pwd=" + passWord + "&sb=sb";
-            string[] loginInfoLines = HttpRequest.Post("http://sep.ucas.ac.cn/slogin", postStr, cookieStore, Encoding.UTF8).Split('\n');
-
-            for(int i=0;i<loginInfoLines.Length;i++)
+            UserModel user = new UserModel();
+            //if(cookieStore==null)
+            //{
+            //    cookieStore = cookieStore == null ? new CookieContainer() : cookieStore;
+            //}
+            var loginInfoLines = Login(username, password).Split('\n');
+            for (int i = 0; i < loginInfoLines.Length; i++)
             {
                 if (loginInfoLines[i].Contains("当前用户所在单位"))
                 {
                     String str = loginInfoLines[i + 3].Trim();
-                    courseListModel.Organization =str.Substring(2,str.Length-2) ;
-                    courseListModel.Name = loginInfoLines[i + 6].Trim();
-                    break;
+                    user.Organization = str.Substring(2, str.Length - 2);
+                    user.Name = loginInfoLines[i + 6].Trim();
+                    user.Username = username;
+                    user.Password = password;
+                    return user;
                 }
             }
+            return null;
+        }
+
+        public static string Login(string username,string password,CookieContainer cookieStore=null)
+        {
+            string postStr = "userName=" + username + "&pwd=" + password + "&sb=sb";
+            return HttpRequest.Post("http://sep.ucas.ac.cn/slogin", postStr, cookieStore, Encoding.UTF8);
+
+        }
+
+        public static List<CourseDbModel> GetCourseList(String userName, String passWord)
+        {
+            var courseList = new List<CourseDbModel>();
+
+            CookieContainer cookieStore = new CookieContainer();
+
+            Login(userName,passWord,cookieStore);
 
             string urlRedirect = "http://sep.ucas.ac.cn/portal/site/226/821";
             string respStr = HttpRequest.Get(urlRedirect, "", cookieStore, Encoding.UTF8);
@@ -56,12 +73,14 @@ namespace CourseSite.Utils
                     int firstPos = line.IndexOf("CourseTimeMsg.aspx?CourseID=") + 28;
                     int lastPos = line.LastIndexOf("target=") - 2;
                     string courseNum = line.Substring(firstPos, lastPos - firstPos);
-                    CourseModel courseModel = new CourseModel();
+                    CourseDbModel course = new CourseDbModel();
 
                     string[] courseListResp = HttpRequest.Get("http://jwjz.ucas.ac.cn/Student/DeskTopModules/Course/CourseTimeMsg.aspx?CourseID=" + courseNum,
                         "", cookieStore, Encoding.UTF8).Split('\n');
                     int j = -1;
-                    string courseName = "";
+
+                    var courseDetial = new CourseDetialDbModel();
+
                     foreach (string str in courseListResp)
                     {
                         if (str.Contains("#990000"))
@@ -71,28 +90,29 @@ namespace CourseSite.Utils
                             int firstPos2 = str2.IndexOf(">") + 1;
                             int lastPos2 = str2.IndexOf("<");
                             String content = str2.Substring(firstPos2, lastPos2 - firstPos2);
+
+
                             if (j == -1)
                             {
-                                courseName = content;
+                                course.Name = content;
+                                course.Num = courseNum;
+                                course.Teacher = GetCourseTeacher(courseNum, cookieStore);
+                                course.Detials = new List<CourseDetialDbModel>();
                             }
                             else if (j == 0)
                             {
-                                courseModel = new CourseModel();
-                                courseModel.Num = (courseNum);
-                                courseModel.Name = courseName;
+                                courseDetial = new CourseDetialDbModel();
                                 String[] grp = content.Split('：');
-                                courseModel.Week = CourseModel.GetWeekIndex(grp[0].Trim());
+                                courseDetial.Week = CourseModel.GetWeekIndex(grp[0].Trim());
                                 String[] temp2 = (grp[1].Trim().Split('、'));
-                                courseModel.Time = temp2[0].Substring(1, temp2[0].Length - 1) + "-" + temp2[temp2.Length - 1].Substring(0, temp2[temp2.Length - 1].Length - 1);
+                                courseDetial.Time = temp2[0].Substring(1, temp2[0].Length - 1) + "-" + temp2[temp2.Length - 1].Substring(0, temp2[temp2.Length - 1].Length - 1);
                             }
                             else if (j == 1)
                             {
-                                courseModel.Place = content;
-                                courseModel.Teacher = GetCourseTeacher(courseNum, cookieStore);
+                                courseDetial.Place = content;
                             }
                             else
                             {
-                                courseModel.Index = ++index;
                                 //String[] weekTemp = content.Split('、');
                                 //List<Int32> weekList = new List<Int32>();
                                 //for (int m = 0; m < weekTemp.Length; m++)
@@ -100,25 +120,25 @@ namespace CourseSite.Utils
                                 //    weekList.Add(Int32.Parse(weekTemp[m]));
                                 //}
                                 //courseModel.WeekNum = weekList;
-                                courseModel.WeekNum = content;
-                                //人文讲座 已经过了的英语 等课程不算入课程表
-                                if (courseModel.Place != null)
-                                {
-                                    courseList.Add(courseModel);
-                                }
+                                courseDetial.WeekNum = content;
+                                course.Detials.Add(courseDetial);
+                                
                             }
                             j = (++j) % 3;
 
                         }
                     }
-
+                    if (course.Detials.Count != 0)
+                    {
+                        //人文讲座 已经过了的英语 等课程不算入课程表
+                        courseList.Add(course);
+                    }
 
                     //string respJson=HttpRequest.Post("http://www.ishangke.net/getcourse.php", "cfgid=" + courseNum,cookieStore, Encoding.UTF8);
                     //var json = Json.Decode(respJson);
                 }
             }
-            courseListModel.CourseInfoList = courseList;
-            return courseListModel;
+            return courseList;
 
 
         }

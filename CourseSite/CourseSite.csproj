@@ -207,6 +207,8 @@
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\AccountBindingModels.cs" />
     <Compile Include="Models\AccountViewModels.cs" />
+    <Compile Include="Models\CourseDbModel.cs" />
+    <Compile Include="Models\CourseDetialDbModel.cs" />
     <Compile Include="Models\CourseListModel.cs" />
     <Compile Include="Models\CourseModel.cs" />
     <Compile Include="Models\IdentityModels.cs" />

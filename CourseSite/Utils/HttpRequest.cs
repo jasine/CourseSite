@@ -16,6 +16,10 @@ namespace CourseSite.Utils
             request.Method = "POST";
             request.ContentType = "application/x-www-form-urlencoded";
             request.ContentLength = Encoding.UTF8.GetByteCount(postDataStr);
+            if (cookie == null)
+            {
+                cookie = new CookieContainer();
+            }
             request.CookieContainer = cookie;
             Stream myRequestStream = request.GetRequestStream();
             StreamWriter myStreamWriter = new StreamWriter(myRequestStream, Encoding.GetEncoding("gb2312"));// Encoding.GetEncoding("gb2312")

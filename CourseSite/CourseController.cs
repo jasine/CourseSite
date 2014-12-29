@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Security.AccessControl;
 using System.Web.Http;
 
 namespace CourseSite
@@ -15,7 +16,7 @@ namespace CourseSite
         // GET api/<controller>
         public IEnumerable<string> Get()
         {
-            return new string[] { "value1", "value2" };
+            return new[] { "value1", "value2" };
         }
 
         // GET api/<controller>/5
@@ -25,7 +26,7 @@ namespace CourseSite
             /*return new CourseListModel {CourseInfoList=new List<CourseModel> { new CourseModel{ Id = 1, Num = "1000", Name = "Data Mining",Place="教1-101",Teacher="刘莹",Time="1-2",Week=1,WeekNum=new List<int> {2,3,4,5,6 } } ,
                 new CourseModel{  Id = 1, Num = "1001", Name = "政治",Place="教1-002",Time="1-2",Week=3,WeekNum=new List<int> {2,3,4,5,6,7,8 } }}
             };*/
-            CourseListModel courseList;
+            List<CourseDbModel> courseList;
             //using (var contex = new CourseDb())
             //{
             //    //contex.Users.c
@@ -34,17 +35,24 @@ namespace CourseSite
             //}
             try
             {
-                courseList = GrabCourse.GetCourseList(username, password);
+                var user = GrabCourse.GetUserInfo(username, password);
                 using(var contex=new CourseDb())
                 {
-                    var users = from user in contex.Users where user.Name==username&&user.Password==password select new { Name = username, Password = password };
+                    var users = from dbUser in contex.Users
+                                where dbUser.Username == username && dbUser.Password == password
+                                select new { Name = username,Password=password};
                     
-                    if ( users.Count()==0)
+                    if ( !users.Any())
                     {
-                        UserModel user = new UserModel() { Name = username, Password = password, CoursesList = courseList };
+                        courseList = GrabCourse.GetCourseList(username, password);
+                        user.CoursesList = courseList;
                         contex.Users.Add(user);
                         contex.SaveChanges();
                         
+                    }
+                    else
+                    {
+                       // courseList = users.First().;
                     }
                 }
                 
@@ -56,7 +64,7 @@ namespace CourseSite
                 return null;
                 //throw;
             }
-            return courseList;
+            return null;
         }
 
         public string Get(string s)
