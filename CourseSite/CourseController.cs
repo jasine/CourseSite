@@ -37,20 +37,40 @@ namespace CourseSite
                 courseList = GrabCourse.GetCourseList(username, password);
                 using(var contex=new CourseDb())
                 {
-                    var users = from user in contex.Users where user.Name==username&&user.Password==password select new { Name = username, Password = password };
-                    
-                    if ( users.Count()==0)
+                    var users = from user in contex.Users where user.Name == username && user.Password == password select new
+                    { Name = username, Password = password,CourseList=user.CoursesList.CourseInfoList };
+
+                    if (!users.Any())
                     {
-                        UserModel user = new UserModel() { Name = username, Password = password, CoursesList = courseList };
+                        UserModel user = new UserModel()
+                        {
+                            Name = username,
+                            Password = password,
+                            CoursesList = courseList
+                        };
                         contex.Users.Add(user);
                         contex.SaveChanges();
-                        
+
                     }
+                    else
+                    {
+                        if (courseList.CourseInfoList.Count == 0)
+                        {
+                            courseList.CourseInfoList = users.First().CourseList;
+                        }
+
+                    }
+
+                    //if (courseList.CourseInfoList.Count == 0)
+                    //{
+                    //    courseList.CourseInfoList = contex.Users.First().CoursesList.CourseInfoList;
+                    //}
+
                 }
                 
                 
             }
-            catch (Exception)
+            catch (Exception e)
             {
                 
                 return null;

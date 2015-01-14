@@ -10,8 +10,6 @@ namespace CourseSite.Migrations
         public Configuration()
         {
             AutomaticMigrationsEnabled = true;
-            ContextKey = "CourseSite.CourseDb";
-            AutomaticMigrationDataLossAllowed = true;
         }
 
         protected override void Seed(CourseSite.CourseDb context)
